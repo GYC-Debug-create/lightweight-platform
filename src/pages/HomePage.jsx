@@ -1,12 +1,15 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 const HomePage = () => {
-  return <>
-    <h1>Home Page</h1>
-    <Link to="/detail/1">商品1</Link>
-    <p></p>
-  </>
-}
+  return (
+    <div>
+      <h2>商城首页</h2>
+      <p>页面待实现</p>
+      <p>
+        <Link to="/detail/g001">查看示例商品</Link>
+      </p>
+    </div>
+  );
+};
 
 export default HomePage;

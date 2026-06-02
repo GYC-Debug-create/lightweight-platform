@@ -1,11 +1,12 @@
 import './App.css';
 import { Outlet } from 'react-router';
+import BottomNav from './components/BottomNav';
 
 function App() {
   return (
     <div className="App">
-      <h1> APP Page</h1>
       <Outlet />
+      <BottomNav />
     </div>
   );
 }

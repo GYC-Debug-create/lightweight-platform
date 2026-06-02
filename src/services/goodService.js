@@ -1,83 +1,73 @@
-const defaultList = [
-  {
-    id: 1,
-    name: '商品1',
-    price: 100,
-    categoryId: '1',
-    img: 'http://www.baidu.com/1.jpg',
-  },
-  {
-    id: 2,
-    name: '商品2',
-    price: 200,
-    categoryId: '2',
-    img: 'http://www.baidu.com/2.jpg',
-  },
-  {
-    id: 3,
-    name: '商品3',
-    price: 300,
-    categoryId: '3',
-    img: 'http://www.baidu.com/3.jpg',
+import { getStorage, setStorage } from "../utils/storage";
+import initialGoods from "../data/initialGoods";
+import initialCategories from "../data/initialCategories";
+
+const GOODS_KEY = "mall_goods";
+const CATEGORIES_KEY = "mall_categories";
+
+export function initGoodsIfNeeded() {
+  if (!localStorage.getItem(GOODS_KEY)) {
+    setStorage(GOODS_KEY, initialGoods);
   }
-]
-
-class GoodService {
-  list = [];
-
-  constructor (){
-    this._loadData();
-  }
-
-  // 根据id获取单个商品
-  getGoodById(id) {
-    return this.list.find(item => item.id === id);
-  }
-  
-  // 获取商品列表
-  getGoodList() {
-    return this.list;
-  }
-
-  // 添加商品
-  addGood(good) {
-    this.list.push(good);
-    this._saveData();
-  }
-
-  // 删除商品
-  deleteGood(id) {
-    this.list = this.list.filter(item => item.id !== id);
-    this._saveData();
-  }
-
-  // 更新商品
-  updateGood(good) {
-    this.list = this.list.map(item => {
-      if (item.id === good.id) {
-        return good;
-      }
-      return item;
-    });
-    this._saveData();
-  }
-
-
-  // 将数据存入到localstorage中
-  _saveData() {
-    localStorage.setItem('goodList', JSON.stringify(this.list));
-  }
-
-  _loadData() {
-    const list = localStorage.getItem('goodList');
-    if (list) {
-      this.list = JSON.parse(list);
-    } else {
-      this.list = defaultList;
-      this._saveData();
-    }
+  if (!localStorage.getItem(CATEGORIES_KEY)) {
+    setStorage(CATEGORIES_KEY, initialCategories);
   }
 }
 
-const goodService = new GoodService()
-export default goodService;
+export function getGoods() {
+  return getStorage(GOODS_KEY, []);
+}
+
+export function getHotGoods() {
+  const goods = getGoods();
+  return goods.filter((g) => g.hot === true);
+}
+
+export function getGoodById(id) {
+  const goods = getGoods();
+  return goods.find((g) => g.id === id) || null;
+}
+
+export function searchGoods(keyword) {
+  const goods = getGoods();
+  if (!keyword) return goods;
+  const kw = keyword.toLowerCase();
+  return goods.filter(
+    (g) =>
+      g.name.toLowerCase().includes(kw) ||
+      (g.description && g.description.toLowerCase().includes(kw))
+  );
+}
+
+export function getCategories() {
+  return getStorage(CATEGORIES_KEY, []);
+}
+
+export function getGoodsByCategory(categoryId) {
+  const goods = getGoods();
+  return goods.filter((g) => g.categoryId === categoryId);
+}
+
+export function createGood(good) {
+  const goods = getGoods();
+  goods.push(good);
+  setStorage(GOODS_KEY, goods);
+}
+
+export function updateGood(id, partialGood) {
+  const goods = getGoods();
+  const idx = goods.findIndex((g) => g.id === id);
+  if (idx === -1) return false;
+  goods[idx] = { ...goods[idx], ...partialGood };
+  setStorage(GOODS_KEY, goods);
+  return true;
+}
+
+export function deleteGood(id) {
+  const goods = getGoods();
+  const index = goods.findIndex((g) => g.id === id);
+  if (index === -1) return false;
+  goods.splice(index, 1);
+  setStorage(GOODS_KEY, goods);
+  return true;
+}

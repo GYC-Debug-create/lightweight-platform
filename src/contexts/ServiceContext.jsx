@@ -1,17 +1,19 @@
-import React, { createContext } from 'react';
-import goodService from '../services/goodService';
-import orderService from '../services/orderService';
+import { createContext, useMemo } from "react";
+import * as goodService from "../services/goodService";
+import * as cartService from "../services/cartService";
+import * as orderService from "../services/orderService";
+import * as authService from "../services/authService";
 
-// Create a new context
 const ServiceContext = createContext();
 
-// Create a provider component
 const ServiceProvider = ({ children }) => {
-  // Define the state and functions here
-  const value = {
+  const value = useMemo(() => ({
     good: goodService,
+    cart: cartService,
     order: orderService,
-  }
+    auth: authService,
+  }), []);
+
   return (
     <ServiceContext.Provider value={value}>
       {children}

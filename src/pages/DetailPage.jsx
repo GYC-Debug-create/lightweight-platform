@@ -1,34 +1,31 @@
-import React, {useContext } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useContext } from "react";
+import { useParams } from "react-router";
+import { ServiceContext } from "../contexts/ServiceContext";
 
-import { ServiceContext } from '../contexts/ServiceContext';
 const DetailPage = () => {
-  const { goodId } = useParams();
-  const parsedGoodId = parseInt(goodId, 10);
+  const { id } = useParams();
   const services = useContext(ServiceContext);
-  const navigate = useNavigate();
 
-  const good = services.good.getGoodById(parsedGoodId);
-  
-  const onBuyClick = () => {
-    navigate(`/createOrder/${goodId}`);
-  }
-
+  const good = services.good.getGoodById(id);
 
   if (!good) {
-    //TBD 跳转主页
-    navigate('/home');
+    return (
+      <div>
+        <h2>商品详情</h2>
+        <p>商品不存在</p>
+      </div>
+    );
   }
 
-  return <>
-    <h1>Detail Page</h1>
-    <p> goodId: {good && goodId}</p>
-    <p> goodName: {good && good.name}</p>
-    <p> goodPrice: {good && good.price}</p>
-    <p> goodCategoryId: {good && good.categoryId}</p>
-    <img src={good && good.img} alt={good && good.name} />
-    <button onClick={onBuyClick}>购买</button>
-  </>
-}
+  return (
+    <div>
+      <h2>商品详情</h2>
+      <p>{good.name}</p>
+      <p>¥{good.price}</p>
+      {good.image && <img src={good.image} alt={good.name} />}
+      <p>{good.description}</p>
+    </div>
+  );
+};
 
 export default DetailPage;

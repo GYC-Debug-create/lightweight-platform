@@ -1,76 +1,51 @@
-const defaultList = [
-  {
-    id: 1,
-    userId: 1,
-    orderNo: '201801010001',
-    createTime: '2018-01-01 00:00:00',
-    payTime: '2018-01-01 00:00:00',
-    status: 0, // 0,未支付 1已支付 2发货 3确认收货
-    price: 100,
-    goodId: 1,
-  }
-]
+import { getStorage, setStorage } from "../utils/storage";
+import { generateOrderId, formatDate } from "../utils/format";
 
-class OrderService {
-  list = [];
+const ORDERS_KEY = "mall_orders";
 
-  constructor (){
-    this._loadData();
-  }
-
-  createOrder(userId, goodId, price) {
-    const orderNo = new Date().getTime();
-    // 从list中找到最大值，生成新的id
-    const maxId = this.list.reduce((max, item) => {
-      return item.id > max ? item.id : max;
-    }, 0);
-
-    const order = {
-      id:maxId + 1,
-      userId,
-      goodId,
-      orderNo,
-      createTime: new Date().toLocaleString(),
-      status: 0,
-      price,
-    }
-    this.list.push(order);
-    this._saveData();
-    return order;
-  }
-
-  payOrder(orderId) {
-    const order = this.getOrderById(orderId);
-    if (!order) {
-      return false;
-    }
-
-    order.status = 1;
-    order.payTime = new Date().toLocaleString();
-    this._saveData();
-    return true;
-  }
-
-  getOrderById(orderId) {
-    return this.list.find(item => item.id === orderId);
-  }
-  
-
-  // 将数据存入到localstorage中
-  _saveData() {
-    localStorage.setItem('orderList', JSON.stringify(this.list));
-  }
-
-  _loadData() {
-    const list = localStorage.getItem('orderList');
-    if (list) {
-      this.list = JSON.parse(list);
-    } else {
-      this.list = defaultList;
-      this._saveData();
-    }
-  }
+export function createOrder(items, receiverInfo) {
+  const orders = getStorage(ORDERS_KEY, []);
+  const totalPrice = items.reduce((sum, item) => sum + item.price * item.count, 0);
+  const order = {
+    id: generateOrderId(),
+    items,
+    totalPrice,
+    status: "待支付",
+    receiver: receiverInfo.receiver || "",
+    phone: receiverInfo.phone || "",
+    address: receiverInfo.address || "",
+    createTime: formatDate(new Date()),
+    payTime: "",
+  };
+  orders.push(order);
+  setStorage(ORDERS_KEY, orders);
+  return order;
 }
 
-const orderService = new OrderService()
-export default orderService;
+export function getOrders() {
+  return getStorage(ORDERS_KEY, []);
+}
+
+export function getOrderById(orderId) {
+  const orders = getOrders();
+  return orders.find((o) => o.id === orderId) || null;
+}
+
+export function payOrder(orderId) {
+  const orders = getOrders();
+  const order = orders.find((o) => o.id === orderId);
+  if (!order) return false;
+  order.status = "已支付";
+  order.payTime = formatDate(new Date());
+  setStorage(ORDERS_KEY, orders);
+  return true;
+}
+
+export function shipOrder(orderId) {
+  const orders = getOrders();
+  const order = orders.find((o) => o.id === orderId);
+  if (!order) return false;
+  order.status = "已发货";
+  setStorage(ORDERS_KEY, orders);
+  return true;
+}
