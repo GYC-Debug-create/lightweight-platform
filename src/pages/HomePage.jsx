@@ -1,64 +1,100 @@
-import React, { useState, useEffect } from 'react';
-import ProductCard from '../components/ProductCard';
-// 依赖 M1 提供的服务
-import { getHotGoods, searchGoods } from '../services/goodService';
+import React, { useState, useEffect } from "react";
+import ProductCard from "../components/ProductCard";
+import { getHotGoods, searchGoods } from "../services/goodService";
+import { SearchOutlined } from "@ant-design/icons";
+
+const CAROUSEL_ITEMS = [
+  {
+    title: "新品首发",
+    subtitle: "春季新款限时特惠",
+  },
+  {
+    title: "数码好物",
+    subtitle: "智能生活由此开始",
+  },
+  {
+    title: "限时折扣",
+    subtitle: "精选商品低至7折",
+  },
+];
 
 export default function HomePage() {
-  const [keyword, setKeyword] = useState('');
+  const [keyword, setKeyword] = useState("");
   const [goods, setGoods] = useState([]);
+  const [carouselIdx, setCarouselIdx] = useState(0);
 
-  // 初始化加载热门商品
   useEffect(() => {
-    const hotGoods = getHotGoods(); // 假设 service 是同步读取 localStorage 的
-    setGoods(hotGoods);
+    setGoods(getHotGoods());
   }, []);
 
-  // 搜索处理
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCarouselIdx((prev) => (prev + 1) % CAROUSEL_ITEMS.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
   const handleSearch = () => {
-    if (keyword.trim() === '') {
+    const trimmed = keyword.trim();
+    if (!trimmed) {
       setGoods(getHotGoods());
-    } else {
-      const results = searchGoods(keyword);
-      setGoods(results);
+      return;
     }
+    const results = searchGoods(trimmed);
+    setGoods(results);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") handleSearch();
   };
 
   return (
-    // 最外层加上了 paddingBottom 防遮挡
-    <div className="home-page" style={{ padding: '20px', paddingBottom: '80px' }}>
-      {/* 1. 搜索框 */}
-      <div className="search-bar" style={{ display: 'flex', marginBottom: '20px' }}>
-        <input 
-          type="text" 
-          placeholder="搜索商品..." 
+    <div className="home-page">
+      <div className="home-hero">
+        <h1>商城</h1>
+        <p>发现你喜欢的每一件好物</p>
+      </div>
+
+      <div className="search-bar-wrap">
+        <SearchOutlined className="search-icon" />
+        <input
+          type="text"
+          className="search-input"
+          placeholder="搜索商品"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          style={{ flex: 1, padding: '8px' }}
+          onKeyDown={handleKeyDown}
         />
-        <button onClick={handleSearch} style={{ marginLeft: '10px', padding: '8px 16px' }}>
-          搜索
-        </button>
       </div>
 
-      {/* 2. 轮播图区域 (静态占位，符合文档要求) */}
-      <div className="carousel" style={{ height: '150px', background: '#ccc', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <h2>热门活动轮播图区域</h2>
+      <div className="carousel-wrap">
+        <div className="carousel-inner">
+          <h2>{CAROUSEL_ITEMS[carouselIdx].title}</h2>
+          <p>{CAROUSEL_ITEMS[carouselIdx].subtitle}</p>
+        </div>
+        <div className="carousel-dots">
+          {CAROUSEL_ITEMS.map((_, idx) => (
+            <div
+              key={idx}
+              className={`carousel-dot${idx === carouselIdx ? " active" : ""}`}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* 3. 热门/搜索商品列表 */}
-      <h3>{keyword ? '搜索结果' : '热门商品'}</h3>
-      <div 
-        className="goods-list" 
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}
-      >
-        {goods.length > 0 ? (
-          goods.map(good => (
+      <div className="section-header">
+        <h2>{keyword ? "搜索结果" : "热门商品"}</h2>
+      </div>
+
+      {goods.length > 0 ? (
+        <div className="goods-grid">
+          {goods.map((good) => (
             <ProductCard key={good.id} product={good} />
-          ))
-        ) : (
-          <p>暂无相关商品</p>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="goods-empty">暂无相关商品</div>
+      )}
     </div>
   );
 }
