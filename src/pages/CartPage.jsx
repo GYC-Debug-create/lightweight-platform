@@ -60,6 +60,13 @@ const CartPage = () => {
       message.warning("请勾选要购买的商品");
       return;
     }
+    if (!services.auth.isUserLoggedIn()) {
+      message.warning("请先登录再进行结算");
+      navigate("/login");
+      return;
+    }
+    sessionStorage.setItem("pending_order_items", JSON.stringify(checkedItems));
+    sessionStorage.setItem("pending_order_source", "cart");
     navigate("/order/create");
   };
 
@@ -109,6 +116,7 @@ const CartPage = () => {
                 <InputNumber
                   size="small"
                   min={1}
+                  max={item.stock || 9999}
                   value={item.count}
                   onChange={(v) => handleCountChange(item.productId, v)}
                   style={{ width: 90 }}

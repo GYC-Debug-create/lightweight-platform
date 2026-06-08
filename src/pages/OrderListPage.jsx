@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { List, Card, Tag, Empty, Spin } from 'antd';
+import { Card, Tag, Empty, Spin } from 'antd';
 import { getCurrentUser } from '../services/authService';
 import { getOrders } from '../services/orderService';
 import { formatPrice, formatDate } from '../utils/format';
@@ -36,7 +36,7 @@ const OrderListPage = () => {
     }
   };
 
-  if (loading) return <Spin tip="加载中..." style={{ display: 'block', marginTop: 100 }} />;
+  if (loading) return <Spin description="加载中..." style={{ display: 'block', marginTop: 100 }} />;
 
   return (
     <div style={{ padding: '20px' }}>
@@ -44,26 +44,25 @@ const OrderListPage = () => {
       {orders.length === 0 ? (
         <Empty description="暂无订单，去逛逛吧" />
       ) : (
-        <List
-          dataSource={orders}
-          renderItem={(order) => (
-            <List.Item>
-              <Card
-                hoverable
-                style={{ width: '100%', cursor: 'pointer' }}
-                onClick={() => navigate(`/order/${order.id}`)}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span>订单号：{order.id}</span>
-                  <Tag color={getStatusColor(order.status)}>{order.status}</Tag>
-                </div>
-                <div>总金额：{formatPrice(order.totalPrice)}</div>
-                <div>创建时间：{formatDate(order.createTime)}</div>
-                <div>商品数量：{order.items.reduce((sum, item) => sum + item.count, 0)} 件</div>
-              </Card>
-            </List.Item>
-          )}
-        />
+          <div className="order-list-container">
+            {orders.map((order) => (
+              <div key={order.id} style={{ marginBottom: 16 }}>
+                <Card
+                  hoverable
+                  style={{ width: '100%', cursor: 'pointer' }}
+                  onClick={() => navigate(`/order/${order.id}`)}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span>订单号：{order.id}</span>
+                    <Tag color={getStatusColor(order.status)}>{order.status}</Tag>
+                  </div>
+                  <div>总金额：{formatPrice(order.totalPrice)}</div>
+                  <div>创建时间：{formatDate(order.createTime)}</div>
+                  <div>商品数量：{order.items.reduce((sum, item) => sum + item.count, 0)} 件</div>
+                </Card>
+              </div>
+            ))}
+          </div>
       )}
     </div>
   );

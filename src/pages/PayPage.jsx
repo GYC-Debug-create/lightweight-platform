@@ -4,6 +4,8 @@ import { isUserLoggedIn } from "../services/authService";
 import { getOrderById, payOrder } from "../services/orderService";
 import { formatPrice, formatDate } from "../utils/format";
 import EmptyState from "../components/EmptyState";
+import { Button } from "antd";
+import { LeftOutlined } from "@ant-design/icons";
 
 const PayPage = () => {
   const { orderId } = useParams();
@@ -23,6 +25,27 @@ const PayPage = () => {
   });
 
   const [paying, setPaying] = useState(false);
+  const [countdown, setCountdown] = useState(3);
+
+  const isPaid = order ? order.status !== "待支付" : false;
+
+  // 倒计时自动跳转副作用
+  useEffect(() => {
+    if (!isPaid) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          navigate(`/order/${orderId}`, { replace: true });
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isPaid, navigate, orderId]);
 
   // 确认支付
   const handlePay = () => {
@@ -34,10 +57,6 @@ const PayPage = () => {
       // 重新加载订单以更新状态
       const updated = getOrderById(orderId);
       setOrder(updated);
-      // 跳转到订单详情
-      setTimeout(() => {
-        navigate(`/order/${orderId}`, { replace: true });
-      }, 800);
     } else {
       alert("支付失败，请重试");
       setPaying(false);
@@ -58,11 +77,17 @@ const PayPage = () => {
     );
   }
 
-  const isPaid = order.status !== "待支付";
-
   return (
     <div className="pay-page">
-      <h2 className="page-title">订单支付</h2>
+      <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #eee', padding: '12px 16px' }}>
+        <Button 
+          type="text" 
+          icon={<LeftOutlined />} 
+          onClick={() => navigate('/orders', { replace: true })} 
+          style={{ marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        />
+        <h2 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0 }}>订单支付</h2>
+      </div>
 
       <div className="pay-card">
         <p className="pay-order-id">
@@ -74,16 +99,22 @@ const PayPage = () => {
         </div>
 
         {isPaid ? (
-          <div className="pay-result paid">
-            <p>✅ 已支付</p>
+          <div className="pay-result paid" style={{ textAlign: "center" }}>
+            <p style={{ fontSize: "18px", fontWeight: "bold", color: "#52c41a", margin: "10px 0" }}>✅ 支付成功</p>
+            <p className="pay-redirect-tip" style={{ color: "#86868b", fontSize: "14px", marginBottom: "16px" }}>
+              系统将在 {countdown} 秒后自动跳转至订单详情...
+            </p>
             {order.payTime && (
-              <p className="pay-time">支付时间：{formatDate(order.payTime)}</p>
+              <p className="pay-time" style={{ color: "#86868b", fontSize: "13px", marginBottom: "20px" }}>
+                支付时间：{formatDate(order.payTime)}
+              </p>
             )}
             <button
               className="view-order-btn"
               onClick={() => navigate(`/order/${orderId}`, { replace: true })}
+              style={{ width: "100%", height: "40px", borderRadius: "8px", background: "#0071e3", color: "#fff", border: "none", cursor: "pointer", fontWeight: "500" }}
             >
-              查看订单详情
+              立即跳转 ({countdown}s)
             </button>
           </div>
         ) : (

@@ -17,6 +17,7 @@ export function addToCart(good, count) {
       name: good.name,
       price: good.price,
       image: good.image,
+      stock: good.stock,
       count,
       checked: true,
     });

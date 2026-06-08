@@ -6,9 +6,11 @@ import {
 } from "../utils/storage";
 import { getCurrentUser, isUserLoggedIn } from "../services/authService";
 import { createOrder } from "../services/orderService";
-import { clearCheckedCartItems } from "../services/cartService";
+import { removeCartItem } from "../services/cartService";
 import { formatPrice } from "../utils/format";
 import EmptyState from "../components/EmptyState";
+import { Button } from "antd";
+import { LeftOutlined } from "@ant-design/icons";
 
 const PENDING_ITEMS_KEY = "pending_order_items";
 const PENDING_SOURCE_KEY = "pending_order_source";
@@ -82,10 +84,10 @@ const CreateOrderPage = () => {
       removeSessionStorage(PENDING_ITEMS_KEY);
       removeSessionStorage(PENDING_SOURCE_KEY);
 
-      // 如果来源是购物车，清理购物车中已结算的商品
-      if (source === "cart") {
-        clearCheckedCartItems();
-      }
+      // 清理购物车中已下单的商品
+      items.forEach((item) => {
+        removeCartItem(item.productId);
+      });
 
       // 跳转到支付页
       navigate(`/pay/${order.id}`, { replace: true });
@@ -111,7 +113,15 @@ const CreateOrderPage = () => {
 
   return (
     <div className="create-order-page">
-      <h2 className="page-title">创建订单</h2>
+      <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #eee', padding: '12px 16px' }}>
+        <Button 
+          type="text" 
+          icon={<LeftOutlined />} 
+          onClick={() => navigate(-1)} 
+          style={{ marginRight: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        />
+        <h2 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0 }}>创建订单</h2>
+      </div>
 
       {/* 商品列表 */}
       <div className="order-section">

@@ -27,7 +27,22 @@ const DetailPage = () => {
   };
 
   const handleBuyNow = () => {
-    services.cart.addToCart(good, quantity);
+    if (!services.auth.isUserLoggedIn()) {
+      message.warning("请先登录再进行购买");
+      navigate("/login");
+      return;
+    }
+    const pendingItem = {
+      productId: good.id,
+      name: good.name,
+      price: good.price,
+      image: good.image,
+      stock: good.stock,
+      count: quantity,
+      checked: true,
+    };
+    sessionStorage.setItem("pending_order_items", JSON.stringify([pendingItem]));
+    sessionStorage.setItem("pending_order_source", "detail");
     navigate("/order/create");
   };
 

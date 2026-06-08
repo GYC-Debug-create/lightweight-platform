@@ -26,14 +26,14 @@ const MinePage = () => {
     <div style={{ padding: '20px' }}>
       <Card
         title="个人信息"
-        bordered={false}
+        variant="borderless"
         style={{ marginBottom: 20 }}
       >
         <p><UserOutlined /> 用户名：{user.username}</p>
         <p>角色：{user.role}</p>
       </Card>
 
-      <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+      <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
         <Button
           type="primary"
           icon={<ShoppingOutlined />}
