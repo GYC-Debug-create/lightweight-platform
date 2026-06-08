@@ -1,10 +1,16 @@
 import { Link, useLocation } from "react-router-dom";
+import {
+  HomeOutlined,
+  AppstoreOutlined,
+  ShoppingCartOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 
 const tabs = [
-  { path: "/", label: "首页" },
-  { path: "/category", label: "分类" },
-  { path: "/cart", label: "购物车" },
-  { path: "/mine", label: "我的" },
+  { path: "/", label: "首页", icon: <HomeOutlined /> },
+  { path: "/category", label: "分类", icon: <AppstoreOutlined /> },
+  { path: "/cart", label: "购物车", icon: <ShoppingCartOutlined /> },
+  { path: "/mine", label: "我的", icon: <UserOutlined /> },
 ];
 
 const BottomNav = () => {
@@ -18,7 +24,8 @@ const BottomNav = () => {
           to={tab.path}
           className={location.pathname === tab.path ? "active" : ""}
         >
-          {tab.label}
+          <span style={{ fontSize: "18px" }}>{tab.icon}</span>
+          <span style={{ fontSize: "12px", marginTop: "2px" }}>{tab.label}</span>
         </Link>
       ))}
     </nav>
