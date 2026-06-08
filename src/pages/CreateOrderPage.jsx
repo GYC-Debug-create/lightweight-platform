@@ -97,7 +97,7 @@ const CreateOrderPage = () => {
       // 跳转到支付页
       navigate(`/pay/${order.id}`, { replace: true });
     } catch {
-      alert("订单创建失败，请重试");
+      message.error("订单创建失败，请重试");
       setSubmitting(false);
     }
   };
