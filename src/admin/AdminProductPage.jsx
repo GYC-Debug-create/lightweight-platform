@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Table, Space, Popconfirm, message, Modal, Form, Input, InputNumber, Switch, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, LogoutOutlined } from '@ant-design/icons';
@@ -14,18 +14,18 @@ const AdminProductPage = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
+  const loadData = useCallback(() => {
+    setGoods(getGoods());
+    setCategories(getCategories());
+  }, []);
+
   useEffect(() => {
     if (!isAdminLoggedIn()) {
       navigate('/admin/login');
     } else {
       loadData();
     }
-  }, [navigate]);
-
-  const loadData = () => {
-    setGoods(getGoods());
-    setCategories(getCategories());
-  };
+  }, [navigate, loadData]);
 
   const handleLogout = () => {
     adminLogout();

@@ -9,7 +9,7 @@ import { createOrder } from "../services/orderService";
 import { removeCartItem } from "../services/cartService";
 import { formatPrice } from "../utils/format";
 import EmptyState from "../components/EmptyState";
-import { Button } from "antd";
+import { Button, message } from "antd";
 import { LeftOutlined } from "@ant-design/icons";
 
 const PENDING_ITEMS_KEY = "pending_order_items";
@@ -62,11 +62,16 @@ const CreateOrderPage = () => {
     if (submitting) return;
     const { receiver, phone, address } = receiverInfo;
     if (!receiver.trim() || !phone.trim() || !address.trim()) {
-      alert("请填写完整的收货信息");
+      message.warning("请填写完整的收货信息");
+      return;
+    }
+    const phoneRegex = /^1[3-9]\d{9}$/;
+    if (!phoneRegex.test(phone.trim())) {
+      message.warning("请输入正确的11位手机号");
       return;
     }
     if (items.length === 0) {
-      alert("没有待下单商品");
+      message.warning("没有待下单商品");
       return;
     }
 
