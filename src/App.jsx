@@ -1,12 +1,15 @@
 import './App.css';
-import { Outlet } from 'react-router';
+import { Outlet, useLocation } from 'react-router-dom';
 import BottomNav from './components/BottomNav';
 
 function App() {
+  const location = useLocation();
+  const isAdminPage = location.pathname.startsWith('/admin');
+
   return (
     <div className="App">
       <Outlet />
-      <BottomNav />
+      {!isAdminPage && <BottomNav />}
     </div>
   );
 }
