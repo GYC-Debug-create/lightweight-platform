@@ -1,13 +1,27 @@
 import { getStorage, setStorage } from "../utils/storage";
 import { generateOrderId, formatDate } from "../utils/format";
+import { getCurrentUser } from "./authService";
 
-const ORDERS_KEY = "mall_orders";
+function getOrdersKey() {
+  const currentUser = getCurrentUser();
+  if (!currentUser) return "mall_orders_anonymous";
+  // 兼容旧版开发数据
+  if (currentUser.username === "member") {
+    if (!localStorage.getItem("mall_orders_member") && localStorage.getItem("mall_orders")) {
+      return "mall_orders";
+    }
+  }
+  return `mall_orders_${currentUser.username}`;
+}
 
 export function createOrder(items, receiverInfo) {
-  const orders = getStorage(ORDERS_KEY, []);
+  const key = getOrdersKey();
+  const orders = getStorage(key, []);
+  const currentUser = getCurrentUser();
   const totalPrice = items.reduce((sum, item) => sum + item.price * item.count, 0);
   const order = {
     id: generateOrderId(),
+    username: currentUser ? currentUser.username : "anonymous",
     items,
     totalPrice,
     status: "待支付",
@@ -18,12 +32,13 @@ export function createOrder(items, receiverInfo) {
     payTime: "",
   };
   orders.push(order);
-  setStorage(ORDERS_KEY, orders);
+  setStorage(key, orders);
   return order;
 }
 
 export function getOrders() {
-  return getStorage(ORDERS_KEY, []);
+  const key = getOrdersKey();
+  return getStorage(key, []);
 }
 
 export function getOrderById(orderId) {
@@ -32,20 +47,23 @@ export function getOrderById(orderId) {
 }
 
 export function payOrder(orderId) {
-  const orders = getOrders();
+  const key = getOrdersKey();
+  const orders = getStorage(key, []);
   const order = orders.find((o) => o.id === orderId);
   if (!order) return false;
   order.status = "已支付";
   order.payTime = formatDate(new Date());
-  setStorage(ORDERS_KEY, orders);
+  setStorage(key, orders);
   return true;
 }
 
 export function shipOrder(orderId) {
-  const orders = getOrders();
+  const key = getOrdersKey();
+  const orders = getStorage(key, []);
   const order = orders.find((o) => o.id === orderId);
   if (!order) return false;
   order.status = "已发货";
-  setStorage(ORDERS_KEY, orders);
+  setStorage(key, orders);
   return true;
 }
+
