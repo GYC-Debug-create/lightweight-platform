@@ -132,7 +132,7 @@ const OrderDetailPage = () => {
       </div>
 
       {/* 操作按钮 */}
-      <div className="detail-actions">
+      <div className="order-detail-actions">
         <button
           className="back-btn"
           onClick={() => navigate("/orders", { replace: true })}
