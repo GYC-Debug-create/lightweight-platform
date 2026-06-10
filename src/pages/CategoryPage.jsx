@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
-import ProductCard from "../components/ProductCard";
-import { getCategories, getGoodsByCategory, getGoods } from "../services/goodService";
+import { useContext, useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
+import { ServiceContext } from "../contexts/ServiceContext";
+import ProductCard from "../components/ProductCard";
 
 const CATEGORY_ICONS = {
   c001: "💻",
@@ -11,50 +11,30 @@ const CATEGORY_ICONS = {
 };
 
 export default function CategoryPage() {
+  const services = useContext(ServiceContext);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [categories, setCategories] = useState([]);
-  const [activeCategoryId, setActiveCategoryId] = useState(null);
-  const [goods, setGoods] = useState([]);
-  const [categoryCounts, setCategoryCounts] = useState({});
 
-  useEffect(() => {
-    const cats = getCategories();
-    setCategories(cats);
+  // 1. 同步加载全部分类 (使用惰性初始化)
+  const [categories] = useState(() => services.good.getCategories());
 
-    const allGoods = getGoods();
-    const counts = {};
-    cats.forEach((cat) => {
-      counts[cat.id] = allGoods.filter((g) => g.categoryId === cat.id).length;
-    });
-    counts.all = allGoods.length;
-    setCategoryCounts(counts);
-  }, []);
-
-  const syncActiveFromURL = useCallback(() => {
+  // 2. 直接使用 useMemo 从 URL 参数推导 activeCategoryId，无 useEffect，无二次渲染
+  const activeCategoryId = useMemo(() => {
     const catParam = searchParams.get("cat");
-    if (catParam === "all") {
-      setActiveCategoryId("all");
-    } else if (catParam && categories.find((c) => c.id === catParam)) {
-      setActiveCategoryId(catParam);
-    } else {
-      setActiveCategoryId("all");
+    if (catParam === "all" || !catParam) {
+      return "all";
     }
+    return categories.some((c) => c.id === catParam) ? catParam : "all";
   }, [searchParams, categories]);
 
-  useEffect(() => {
-    syncActiveFromURL();
-  }, [syncActiveFromURL]);
-
-  useEffect(() => {
+  // 3. 根据 activeCategoryId 同步推导 goods 列表
+  const goods = useMemo(() => {
     if (activeCategoryId === "all") {
-      setGoods(getGoods());
-    } else if (activeCategoryId) {
-      setGoods(getGoodsByCategory(activeCategoryId));
+      return services.good.getGoods();
     }
-  }, [activeCategoryId]);
+    return services.good.getGoodsByCategory(activeCategoryId);
+  }, [activeCategoryId, services.good]);
 
   const handleCategoryClick = (catId) => {
-    setActiveCategoryId(catId);
     if (catId === "all") {
       setSearchParams({});
     } else {
@@ -62,6 +42,7 @@ export default function CategoryPage() {
     }
   };
 
+  // 4. 纯渲染期计算，无需 useMemo
   const activeCategory = activeCategoryId === "all"
     ? { id: "all", name: "全部" }
     : categories.find((c) => c.id === activeCategoryId);

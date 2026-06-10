@@ -1,11 +1,10 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ServiceContext } from "../contexts/ServiceContext";
 import {
   Button,
   InputNumber,
   Checkbox,
-  Empty,
   message,
   Popconfirm,
 } from "antd";
@@ -18,13 +17,9 @@ import {
 const CartPage = () => {
   const services = useContext(ServiceContext);
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => services.cart.getCart());
 
   const loadCart = () => setCartItems(services.cart.getCart());
-
-  useEffect(() => {
-    loadCart();
-  }, []);
 
   const checkedItems = cartItems.filter((i) => i.checked);
   const totalPrice = checkedItems.reduce(

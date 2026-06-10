@@ -1,12 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   getSessionStorage,
   removeSessionStorage,
 } from "../utils/storage";
-import { getCurrentUser, isUserLoggedIn } from "../services/authService";
-import { createOrder } from "../services/orderService";
-import { removeCartItem } from "../services/cartService";
+import { ServiceContext } from "../contexts/ServiceContext";
 import { formatPrice } from "../utils/format";
 import EmptyState from "../components/EmptyState";
 import { Button, message } from "antd";
@@ -27,8 +25,8 @@ function loadPendingData() {
 }
 
 // 获取默认收货信息
-function getDefaultReceiverInfo() {
-  const user = getCurrentUser();
+function getDefaultReceiverInfo(services) {
+  const user = services.auth.getCurrentUser();
   return {
     receiver: user?.username || "测试用户",
     phone: "<手机号>",
@@ -38,17 +36,18 @@ function getDefaultReceiverInfo() {
 
 const CreateOrderPage = () => {
   const navigate = useNavigate();
+  const services = useContext(ServiceContext);
 
   // 登录检查（真正的副作用，留在 useEffect）
   useEffect(() => {
-    if (!isUserLoggedIn()) {
+    if (!services.auth.isUserLoggedIn()) {
       navigate("/login", { replace: true });
     }
-  }, [navigate]);
+  }, [navigate, services.auth]);
 
-  // 使用 useState 懒初始化器同步读取数据
-  const [{ items, source }] = useState(loadPendingData);
-  const [receiverInfo, setReceiverInfo] = useState(getDefaultReceiverInfo);
+  // 使用 useState 懒初始化器同步读取数据，删掉未使用的 source
+  const [{ items }] = useState(loadPendingData);
+  const [receiverInfo, setReceiverInfo] = useState(() => getDefaultReceiverInfo(services));
   const [submitting, setSubmitting] = useState(false);
 
   // 计算总价
@@ -79,7 +78,7 @@ const CreateOrderPage = () => {
 
     try {
       // 创建订单
-      const order = createOrder(items, {
+      const order = services.order.createOrder(items, {
         receiver: receiver.trim(),
         phone: phone.trim(),
         address: address.trim(),
@@ -91,7 +90,7 @@ const CreateOrderPage = () => {
 
       // 清理购物车中已下单的商品
       items.forEach((item) => {
-        removeCartItem(item.productId);
+        services.cart.removeCartItem(item.productId);
       });
 
       // 跳转到支付页

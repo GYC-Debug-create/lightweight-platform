@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import ProductCard from "../components/ProductCard";
-import { getHotGoods, searchGoods, getCategories } from "../services/goodService";
+import { ServiceContext } from "../contexts/ServiceContext";
 import { SearchOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -14,36 +14,38 @@ const CATEGORY_ICONS = {
   "c001": "💻",
   "c002": "👕",
   "c003": "🍔",
-  "c004": "🏠",
+  "c004": "📦",
 };
 
 export default function HomePage() {
+  const services = useContext(ServiceContext);
   const location = useLocation();
   const navigate = useNavigate();
-  const [keyword, setKeyword] = useState("");
-  const [goods, setGoods] = useState([]);
+
+  // 直接从 location.state 提取初始搜索词和商品数据，防止同步 effect 的 setState 触发
+  const [keyword, setKeyword] = useState(() => {
+    return location.state?.searchKeyword?.trim() || "";
+  });
+  
+  const [goods, setGoods] = useState(() => {
+    const searchKeyword = location.state?.searchKeyword?.trim();
+    if (searchKeyword) {
+      return services.good.searchGoods(searchKeyword);
+    }
+    return services.good.getHotGoods();
+  });
+
+  const [categories] = useState(() => services.good.getCategories());
   const [carouselIdx, setCarouselIdx] = useState(0);
-  const [categories, setCategories] = useState([]);
-  const [allGoods, setAllGoods] = useState([]);
 
+  // 仅作为副作用清理历史 state 痕迹，不引发重新渲染
   useEffect(() => {
-    const hotGoods = getHotGoods();
-    setGoods(hotGoods);
-    setAllGoods(hotGoods);
-    setCategories(getCategories());
-  }, []);
-
-  useEffect(() => {
-    const state = location.state;
-    if (state && state.searchKeyword) {
-      const trimmed = state.searchKeyword.trim();
-      setKeyword(trimmed);
-      const results = searchGoods(trimmed);
-      setGoods(results);
+    if (location.state?.searchKeyword) {
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
 
+  // 轮播图计时器
   useEffect(() => {
     const timer = setInterval(() => {
       setCarouselIdx((prev) => (prev + 1) % CAROUSEL_ITEMS.length);
@@ -54,16 +56,19 @@ export default function HomePage() {
   const handleSearch = () => {
     const trimmed = keyword.trim();
     if (!trimmed) {
-      setGoods(allGoods);
+      setGoods(services.good.getHotGoods());
       return;
     }
-    const results = searchGoods(trimmed);
+    const results = services.good.searchGoods(trimmed);
     setGoods(results);
   };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") handleSearch();
   };
+
+  // 热排数据
+  const hotRankingGoods = services.good.getHotGoods().slice(0, 5);
 
   return (
     <div className="home-page">
@@ -156,7 +161,7 @@ export default function HomePage() {
         <aside className="home-desktop-sidebar">
           <div className="home-desktop-sidebar-card">
             <h4>🔥 热门排行</h4>
-            {allGoods.slice(0, 5).map((good) => (
+            {hotRankingGoods.map((good) => (
               <div
                 key={good.id}
                 className="home-desktop-sidebar-item"

@@ -1,29 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Tag, Empty, Spin } from 'antd';
-import { getCurrentUser } from '../services/authService';
-import { getOrders } from '../services/orderService';
+import { Card, Tag, Empty } from 'antd';
+import { ServiceContext } from '../contexts/ServiceContext';
 import { formatPrice, formatDate } from '../utils/format';
 
 const OrderListPage = () => {
+  const services = useContext(ServiceContext);
   const navigate = useNavigate();
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const user = getCurrentUser();
+  const user = services.auth.getCurrentUser();
 
+  // 仅在无登录用户时做重定向副作用
   useEffect(() => {
     if (!user) {
       navigate('/login');
-      return;
     }
-    // 获取所有订单，按时间倒序
-    const allOrders = getOrders();
-    allOrders.sort((a, b) => new Date(b.createTime) - new Date(a.createTime));
-    setOrders(allOrders);
-    setLoading(false);
   }, [user, navigate]);
 
   if (!user) return null;
+
+  // 惰性直接推算排序后的订单列表，免除 state 和 useEffect 级联渲染
+  const orders = services.order.getOrders()
+    .sort((a, b) => new Date(b.createTime) - new Date(a.createTime));
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -35,8 +32,6 @@ const OrderListPage = () => {
       default: return 'default';
     }
   };
-
-  if (loading) return <Spin description="加载中..." style={{ display: 'block', marginTop: 100 }} />;
 
   return (
     <div style={{ padding: '20px' }}>

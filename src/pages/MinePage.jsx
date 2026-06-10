@@ -1,12 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Space, message } from 'antd';
 import { UserOutlined, ShoppingOutlined, LogoutOutlined } from '@ant-design/icons';
-import { getCurrentUser, logout } from '../services/authService';
+import { ServiceContext } from '../contexts/ServiceContext';
 
 const MinePage = () => {
+  const services = useContext(ServiceContext);
   const navigate = useNavigate();
-  const user = getCurrentUser();
+  const user = services.auth.getCurrentUser();
 
   useEffect(() => {
     if (!user) {
@@ -15,7 +16,7 @@ const MinePage = () => {
   }, [user, navigate]);
 
   const handleLogout = () => {
-    logout();
+    services.auth.logout();
     message.success('已退出登录');
     navigate('/');
   };

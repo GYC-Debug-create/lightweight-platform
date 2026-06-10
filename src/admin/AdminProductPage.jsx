@@ -7,8 +7,8 @@ import { getGoods, createGood, updateGood, deleteGood, getCategories } from '../
 
 const AdminProductPage = () => {
   const navigate = useNavigate();
-  const [goods, setGoods] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [goods, setGoods] = useState(() => getGoods());
+  const [categories, setCategories] = useState(() => getCategories());
   const [modalVisible, setModalVisible] = useState(false);
   const [editingGood, setEditingGood] = useState(null);
   const [form] = Form.useForm();
@@ -22,10 +22,8 @@ const AdminProductPage = () => {
   useEffect(() => {
     if (!isAdminLoggedIn()) {
       navigate('/admin/login');
-    } else {
-      loadData();
     }
-  }, [navigate, loadData]);
+  }, [navigate]);
 
   const handleLogout = () => {
     adminLogout();

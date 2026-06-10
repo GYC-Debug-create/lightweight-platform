@@ -1,27 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { isUserLoggedIn } from "../services/authService";
-import { getOrderById, payOrder } from "../services/orderService";
+import { ServiceContext } from "../contexts/ServiceContext";
 import { formatPrice, formatDate } from "../utils/format";
 import EmptyState from "../components/EmptyState";
-import { Button } from "antd";
+import { Button, message } from "antd";
 import { LeftOutlined } from "@ant-design/icons";
 
 const PayPage = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
+  const services = useContext(ServiceContext);
 
   // 登录检查（真正的副作用）
   useEffect(() => {
-    if (!isUserLoggedIn()) {
+    if (!services.auth.isUserLoggedIn()) {
       navigate("/login", { replace: true });
     }
-  }, [navigate]);
+  }, [navigate, services.auth]);
 
   // 同步读取订单数据到初始状态
   const [order, setOrder] = useState(() => {
     if (!orderId) return null;
-    return getOrderById(orderId);
+    return services.order.getOrderById(orderId);
   });
 
   const [paying, setPaying] = useState(false);
@@ -52,13 +52,13 @@ const PayPage = () => {
     if (paying) return;
     setPaying(true);
 
-    const success = payOrder(orderId);
+    const success = services.order.payOrder(orderId);
     if (success) {
       // 重新加载订单以更新状态
-      const updated = getOrderById(orderId);
+      const updated = services.order.getOrderById(orderId);
       setOrder(updated);
     } else {
-      alert("支付失败，请重试");
+      message.error("支付失败，请重试");
       setPaying(false);
     }
   };

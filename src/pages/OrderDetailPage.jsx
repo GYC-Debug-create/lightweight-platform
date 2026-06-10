@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { isUserLoggedIn } from "../services/authService";
-import { getOrderById } from "../services/orderService";
+import { ServiceContext } from "../contexts/ServiceContext";
 import { formatPrice, formatDate } from "../utils/format";
 import EmptyState from "../components/EmptyState";
 
@@ -17,18 +16,19 @@ const STATUS_MAP = {
 const OrderDetailPage = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
+  const services = useContext(ServiceContext);
 
   // 登录检查（真正的副作用）
   useEffect(() => {
-    if (!isUserLoggedIn()) {
+    if (!services.auth.isUserLoggedIn()) {
       navigate("/login", { replace: true });
     }
-  }, [navigate]);
+  }, [navigate, services.auth]);
 
   // 同步读取订单数据到初始状态
   const [order] = useState(() => {
     if (!orderId) return null;
-    return getOrderById(orderId);
+    return services.order.getOrderById(orderId);
   });
 
   if (!order) {
@@ -132,7 +132,7 @@ const OrderDetailPage = () => {
       </div>
 
       {/* 操作按钮 */}
-      <div className="order-detail-actions">
+      <div className="detail-actions">
         <button
           className="back-btn"
           onClick={() => navigate("/orders", { replace: true })}

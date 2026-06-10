@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Form, Input, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { login, register } from '../services/authService';
+import { ServiceContext } from '../contexts/ServiceContext';
 
 const LoginPage = () => {
+  const services = useContext(ServiceContext);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
@@ -14,7 +15,7 @@ const LoginPage = () => {
     // 模拟异步
     setTimeout(() => {
       if (isRegister) {
-        const user = register(values.username, values.password);
+        const user = services.auth.register(values.username, values.password);
         if (user) {
           message.success('注册并登录成功');
           navigate('/mine');
@@ -22,7 +23,7 @@ const LoginPage = () => {
           message.error('注册失败：用户名已存在');
         }
       } else {
-        const user = login(values.username, values.password);
+        const user = services.auth.login(values.username, values.password);
         if (user) {
           message.success('登录成功');
           navigate('/mine');

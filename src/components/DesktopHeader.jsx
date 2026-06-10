@@ -1,8 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useContext } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
-import { getCategories, getHotGoods, searchGoods } from "../services/goodService";
-import { getCart } from "../services/cartService";
-import { getCurrentUser } from "../services/authService";
+import { ServiceContext } from "../contexts/ServiceContext";
 import {
   SearchOutlined,
   ShoppingCartOutlined,
@@ -12,33 +10,31 @@ import {
 import "./DesktopHeader.css";
 
 const DesktopHeader = ({ isAdminPage }) => {
+  const services = useContext(ServiceContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [keyword, setKeyword] = useState("");
-  const [categories, setCategories] = useState([]);
-  const [cartCount, setCartCount] = useState(0);
-  const user = getCurrentUser();
+  
+  // 惰性加载分类和购物车数量，消除首挂载 effect 同步
+  const [categories] = useState(() => services.good.getCategories());
+  const [cartCount, setCartCount] = useState(() => services.cart.getCart().length);
+  
+  const user = services.auth.getCurrentUser();
 
   const activeNavCatId = useMemo(() => {
     if (location.pathname !== "/category") return null;
     return searchParams.get("cat") || "all";
   }, [location.pathname, searchParams]);
 
+  // 跨 Tab 数据同步与路由监听更新
   useEffect(() => {
-    setCategories(getCategories());
-  }, []);
-
-  useEffect(() => {
-    const cart = getCart();
-    setCartCount(cart.length);
     const handleFocus = () => {
-      const cart = getCart();
-      setCartCount(cart.length);
+      setCartCount(services.cart.getCart().length);
     };
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
-  }, [location.pathname]);
+  }, [location.pathname, services.cart]);
 
   const handleSearch = () => {
     const trimmed = keyword.trim();
