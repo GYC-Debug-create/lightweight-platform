@@ -16,7 +16,7 @@ const DesktopHeader = ({ isAdminPage }) => {
   const [searchParams] = useSearchParams();
   const [keyword, setKeyword] = useState("");
   
-  // 惰性加载分类和购物车数量，消除首挂载 effect 同步
+  // 加载分类和购物车数量
   const [categories] = useState(() => services.good.getCategories());
   const [cartCount, setCartCount] = useState(() => services.cart.getCart().length);
   
@@ -27,7 +27,7 @@ const DesktopHeader = ({ isAdminPage }) => {
     return searchParams.get("cat") || "all";
   }, [location.pathname, searchParams]);
 
-  // 跨 Tab 数据同步与路由监听更新
+  // 监听窗口聚焦同步数据
   useEffect(() => {
     const handleFocus = () => {
       setCartCount(services.cart.getCart().length);

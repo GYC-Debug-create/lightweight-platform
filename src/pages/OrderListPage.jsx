@@ -9,7 +9,7 @@ const OrderListPage = () => {
   const navigate = useNavigate();
   const user = services.auth.getCurrentUser();
 
-  // 仅在无登录用户时做重定向副作用
+  // 未登录跳转
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -18,7 +18,7 @@ const OrderListPage = () => {
 
   if (!user) return null;
 
-  // 惰性直接推算排序后的订单列表，免除 state 和 useEffect 级联渲染
+  // 获取排序后的订单列表
   const orders = services.order.getOrders()
     .sort((a, b) => new Date(b.createTime) - new Date(a.createTime));
 

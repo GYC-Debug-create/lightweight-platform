@@ -14,10 +14,10 @@ export default function CategoryPage() {
   const services = useContext(ServiceContext);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // 1. 同步加载全部分类 (使用惰性初始化)
+  // 加载分类列表
   const [categories] = useState(() => services.good.getCategories());
 
-  // 2. 直接使用 useMemo 从 URL 参数推导 activeCategoryId，无 useEffect，无二次渲染
+  // 获取当前激活的分类 ID
   const activeCategoryId = useMemo(() => {
     const catParam = searchParams.get("cat");
     if (catParam === "all" || !catParam) {
@@ -26,7 +26,7 @@ export default function CategoryPage() {
     return categories.some((c) => c.id === catParam) ? catParam : "all";
   }, [searchParams, categories]);
 
-  // 3. 根据 activeCategoryId 同步推导 goods 列表
+  // 获取当前分类下的商品
   const goods = useMemo(() => {
     if (activeCategoryId === "all") {
       return services.good.getGoods();
@@ -42,7 +42,7 @@ export default function CategoryPage() {
     }
   };
 
-  // 4. 纯渲染期计算，无需 useMemo
+  // 获取当前分类对象
   const activeCategory = activeCategoryId === "all"
     ? { id: "all", name: "全部" }
     : categories.find((c) => c.id === activeCategoryId);

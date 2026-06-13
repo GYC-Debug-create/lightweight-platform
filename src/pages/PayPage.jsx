@@ -11,14 +11,14 @@ const PayPage = () => {
   const navigate = useNavigate();
   const services = useContext(ServiceContext);
 
-  // 登录检查（真正的副作用）
+  // 登录状态校验
   useEffect(() => {
     if (!services.auth.isUserLoggedIn()) {
       navigate("/login", { replace: true });
     }
   }, [navigate, services.auth]);
 
-  // 同步读取订单数据到初始状态
+  // 获取订单详情
   const [order, setOrder] = useState(() => {
     if (!orderId) return null;
     return services.order.getOrderById(orderId);
@@ -29,7 +29,7 @@ const PayPage = () => {
 
   const isPaid = order ? order.status !== "待支付" : false;
 
-  // 倒计时自动跳转副作用
+  // 支付成功倒计时跳转
   useEffect(() => {
     if (!isPaid) return;
 

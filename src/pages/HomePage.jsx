@@ -22,7 +22,7 @@ export default function HomePage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // 直接从 location.state 提取初始搜索词和商品数据，防止同步 effect 的 setState 触发
+  // 从路由状态中提取初始搜索词
   const [keyword, setKeyword] = useState(() => {
     return location.state?.searchKeyword?.trim() || "";
   });
@@ -38,7 +38,7 @@ export default function HomePage() {
   const [categories] = useState(() => services.good.getCategories());
   const [carouselIdx, setCarouselIdx] = useState(0);
 
-  // 仅作为副作用清理历史 state 痕迹，不引发重新渲染
+  // 清理历史 state
   useEffect(() => {
     if (location.state?.searchKeyword) {
       window.history.replaceState({}, document.title);

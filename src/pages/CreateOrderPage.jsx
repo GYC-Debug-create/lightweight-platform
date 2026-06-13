@@ -13,7 +13,7 @@ import { LeftOutlined } from "@ant-design/icons";
 const PENDING_ITEMS_KEY = "pending_order_items";
 const PENDING_SOURCE_KEY = "pending_order_source";
 
-// 从 sessionStorage 读取待下单数据（同步操作）
+// 从 sessionStorage 读取待下单数据
 function loadPendingData() {
   const pendingItems = getSessionStorage(PENDING_ITEMS_KEY, []);
   const pendingSource = getSessionStorage(PENDING_SOURCE_KEY, "");
@@ -38,14 +38,14 @@ const CreateOrderPage = () => {
   const navigate = useNavigate();
   const services = useContext(ServiceContext);
 
-  // 登录检查（真正的副作用，留在 useEffect）
+  // 校验登录状态
   useEffect(() => {
     if (!services.auth.isUserLoggedIn()) {
       navigate("/login", { replace: true });
     }
   }, [navigate, services.auth]);
 
-  // 使用 useState 懒初始化器同步读取数据，删掉未使用的 source
+  // 初始化订单商品数据
   const [{ items }] = useState(loadPendingData);
   const [receiverInfo, setReceiverInfo] = useState(() => getDefaultReceiverInfo(services));
   const [submitting, setSubmitting] = useState(false);
