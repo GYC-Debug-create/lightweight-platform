@@ -1,8 +1,18 @@
 # 第四次作业 —— React 商城系统（大作业）
 
-## 作业要求
+本仓库为“轻量化平台开发”课程第四次作业的公开副本，内容为一个基于 React 的商城系统前端源码，包含前台商城与后台管理端。
 
-使用 React 制作一套**商城系统**，系统分为两端：**前台产品端**与**后台管理端**。具体需求如下：
+## 项目概览
+
+- 技术栈：React 19、React Router 7、Ant Design 6、Vite 8、ESLint 10（具体版本以 `package.json` 为准）
+- 前台页面：首页、分类、购物车、我的、登录、商品详情、创建订单、支付、订单列表、订单详情（路由见 `src/router.jsx`）
+- 后台页面：后台登录（`/admin/login`）、后台商品管理（`/admin/products`）
+- 数据存储：前端通过 `src/utils/storage.js` 读写 `localStorage` 与 `sessionStorage`；源码中未发现网络请求调用（如 `fetch`、`axios`），即未接入真实后端
+- 小组分工与实现说明见 `Report.md`
+
+## 课程作业要求
+
+以下为课程作业要求原文（保留自原 README）。
 
 ### 一、前台功能要求
 
@@ -36,8 +46,6 @@
 | 用户登录 | 前台用户登录/注册功能，登录后才能进行购物车、下单等操作 |
 | 数据联动 | 前后台数据需联动（可使用 `localStorage` 实现简单联动，或使用 Mock 数据模拟后端接口） |
 
----
-
 ## 技术要求
 
 | 要求 | 说明 |
@@ -64,90 +72,63 @@
 | 单元测试 | 对核心组件或工具函数编写简单测试 |
 | 部署上线 | 将项目部署到 Vercel、Netlify 等平台并提供可访问链接 |
 
----
-
-## 目录结构
-
 ## 目录结构
 
 ```
-项目根目录/
-├── metadata.json ← 【必填】填写组长姓名、学号、作业名称
+.
+├── README.md
+├── Report.md                 作业报告（小组分工与实现说明）
+├── metadata.json             作业信息文件（自检与打包脚本读取）
 ├── package.json
-├── README.md ← 项目说明文档
+├── package-lock.json
 ├── index.html
-├── vite.config.js （若使用 Vite）
+├── vite.config.js
+├── eslint.config.js
+├── .gitignore
+├── public/                   静态资源（icons.svg、favicon.svg、goods/ 商品图片）
 ├── src/
-│ ├── main.jsx
-│ ├── App.jsx
-│ ├── App.css
-│ ├── index.css
-│ ├── pages/ ← 页面组件（Home, Category, Cart, User, ProductDetail, Order, Pay, Admin...）
-│ ├── components/ ← 公共组件（Header, Footer, SearchBar, Carousel, ProductCard...）
-│ ├── hooks/ ← 自定义 Hooks
-│ ├── utils/ ← 工具函数（存储、格式化等）
-│ ├── contexts/ ← 全局 Context
-│ ├── assets/ ← 静态资源
-│ └── mock/ ← Mock 数据（可选）
-├── public/              ← 公共资源目录
+│   ├── main.jsx              入口文件
+│   ├── App.jsx               根组件（布局与路由出口）
+│   ├── router.jsx            路由配置
+│   ├── App.css / index.css   全局样式
+│   ├── pages/                前台页面
+│   ├── admin/                后台页面（登录、商品管理）
+│   ├── components/           公共组件
+│   ├── contexts/             ServiceContext（全局服务注入）
+│   ├── services/             业务服务（认证、购物车、商品、订单）
+│   ├── data/                 初始分类与商品数据
+│   └── utils/                存储与格式化工具
 └── tool/
-│   ├── check.cjs        ← 自检脚本
-│   └── pack.cjs         ← 打包脚本
+    ├── check.cjs             自检脚本
+    └── pack.cjs              打包脚本
 ```
 
----
-
-## 开始之前
-
-### 1. 安装依赖
+## 快速开始
 
 ```bash
-npm install
+npm install      # 安装依赖
+npm run dev      # 启动开发服务器（修改代码后页面自动刷新）
+npm run build    # 构建生产版本
+npm run lint     # 运行 ESLint
+npm run check    # 运行自检脚本（tool/check.cjs）
+npm run pack     # 运行打包脚本（tool/pack.cjs，生成作业压缩包）
 ```
 
-### 2. 填写个人信息
+- `metadata.json` 为课程要求的作业信息文件，自检与打包脚本会读取其中的作业信息。
+- 打包脚本会检查压缩包体积是否超过 8 MB。
 
-打开根目录的 `metadata.json`，填写你的信息：
+## 开发流程（课程要求）
 
-```json
-{
-  "studentName": "张三",
-  "studentId": "20240001",
-  "assignmentName": "第四次作业"
-}
-```
+1. 根组件逻辑与布局位于 `src/App.jsx`，路由配置位于 `src/router.jsx`。
+2. 页面组件放在 `src/pages/`（后台页面在 `src/admin/`），公共组件放在 `src/components/`。
+3. 样式位于 `src/App.css`、`src/index.css` 及组件样式文件中。
+4. 完成后撰写 `Report.md`，先运行 `npm run check` 确认没有遗漏，再运行 `npm run pack` 生成提交文件。
 
-### 3. 启动开发服务器
+## 仓库说明
 
-```bash
-npm run dev
-```
-
-浏览器会自动打开开发页面，修改代码后页面会自动刷新（HMR）。
-
----
-
-## 开发流程
-
-1. 在 `src/App.jsx` 中编写根组件逻辑和布局
-2. 根据需要在 `src/` 下创建子组件文件
-3. 在 `src/App.css` 中编写样式
-4. 如有图片资源放入 `src/assets/` 目录
-5. 完成后撰写 `Report.md` 作业报告
-6. 运行**自检脚本**，确认没有遗漏：
-
-```bash
-node tool/check.cjs
-```
-
-7. 自检全部通过后，运行**打包脚本**生成提交文件：
-
-```bash
-node tool/pack.cjs
-```
-
-打包完成后，会在根目录生成：
-
-```
-{学号}_{姓名}_{作业名称}.zip
-```
+- 本仓库为课程作业的公开副本。
+- 历史提交中的疑似密钥与密码字段已替换为 `<REDACTED>`，例如演示账号的密码字段（`src/services/authService.js`）；如需使用演示登录，请自行设置账号密码。
+- 提交者邮箱已匿名化。
+- 提交者显示名中的学号与文档中的学号已匿名化。
+- 已知问题：`package-lock.json` 中 `js-tokens` 一项因脱敏规则被误替换为 `<REDACTED>`（原依赖版本范围为 `^4.0.0`），执行 `npm install` 前请先将其恢复。
+- 如需完整开发记录请联系团队成员。
