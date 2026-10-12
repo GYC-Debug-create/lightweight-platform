@@ -130,5 +130,4 @@ npm run pack     # 运行打包脚本（tool/pack.cjs，生成作业压缩包）
 - 历史提交中的疑似密钥与密码字段已替换为 `<REDACTED>`，例如演示账号的密码字段（`src/services/authService.js`）；如需使用演示登录，请自行设置账号密码。
 - 提交者邮箱已匿名化。
 - 提交者显示名中的学号与文档中的学号已匿名化。
-- 已知问题：`package-lock.json` 中 `js-tokens` 一项因脱敏规则被误替换为 `<REDACTED>`（原依赖版本范围为 `^4.0.0`），执行 `npm install` 前请先将其恢复。
 - 如需完整开发记录请联系团队成员。
